@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Variables
+
+# file to store configurations primarily is a key value pair of booleans 
+if [[ ! -e $HOME/.config/nvimc/.config ]]
+then 
+  mkdir $HOME/.config/nvimc/ 2> /dev/null
+  touch $HOME/.config/nvimc/.configure 2> /dev/null
+  echo "input_mount_key:y" > $HOME/.config/nvimc/.configure 2> /dev/null
+  echo "input_mount_config:y" >> $HOME/.config/nvimc/.configure 2> /dev/null
+fi
+
+# flag validation 
+if [[ $# -eq 0 ]]
+then
+  docker run -it -v $(pwd):/mnt/$(basename $(pwd)) ghcr.io/myselfakashagarwal/coder:1.0 nvim /mnt/$(basename $(pwd))
+elif [[ $# == 1 ]]
+then
+  case $1 in 
+  --help | -h)
+    echo "
+  Usage: 
+  nvimc                          Open the current working directory in the neovim 
+  nvimc [OPTIONS] [ARGUMENTS]    Open the neovim with respect to arguments provided
+
+  Options                 Argument                      Action 
+  --version , -v          <none>                        To get the current version
+  --configure , -c        <none>                        To configure workspace
+  --reconfigure , -rc     <none>                        To reconfigure the workspace 
+  --file , -f             <PATH-TO-FILE-OR-FOLDER>      To open the provided file/folder in neovim  
+         "
+  ;;
+  --version | -v)
+    echo "1.0 beta"
+  ;;
+  --configure | -c) 
+    echo "
+  Note: The configurations are primarily booleans thy which followed every time a coder container is spawned
+        The configs are stored at $HOME/.config/nvimc/.configure
+        Dont worry about it they are handled automaticially !
+        They are 'y' by default 
+        "
+    read -p "Mount ssh keys [y/n]:" input_mount_key
+    read -p "Mount Git Config [y/n]" input_mount_config
+    echo "input_mount_key:$input_mount_key" > $HOME/.config/nvimc/.configure
+    echo "input_mount_config:$input_mount_config" >> $HOME/.config/nvimc/.configure
+  ;;
+  *)
+    echo "Error: Invalid arguments"
+  ;;
+  esac
+else
+  case $1 in 
+  --file | -f)
+    input_file=$2
+    # echo $input_file
+    if [[ -e $input_file || -d $input_file ]]
+    then
+      docker run -it -v $input_file:/mnt/$(basename $input_file) ghcr.io/myselfakashagarwal/coder:1.0 nvim /mnt/$(basename $input_file)
+    else 
+      echo "Error: Invalid file"
+    fi
+  ;;
+  *)
+    echo "Error: Invalid arguments"
+  ;;
+  esac
+fi
+
+
