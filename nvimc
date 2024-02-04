@@ -48,9 +48,8 @@ then
 
   Options                 Argument                      Action 
   --version , -v          <none>                        To get the current version
-  --configure , -c        <none>                        To configure workspace
-  --reconfigure , -rc     <none>                        To reconfigure the workspace 
-  --file , -f             <PATH-TO-FILE-OR-FOLDER>      To open the provided file/folder in neovim  
+  --configure , -c        <none>                        To configure workspace 
+  --file , -f             <PATH-TO-FOLDER>              To open the provided folder in neovim  
          "
   ;;
   --version | -v)
