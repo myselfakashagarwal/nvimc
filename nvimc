@@ -14,16 +14,16 @@ mounted_working_directory_location=""
 start() {
   if [[ $mount_keys == "n" && $mount_gitconfig == "n" ]]
   then
-    docker run -it -v $1:$2 ghcr.io/myselfakashagarwal/coder:1.0 nvim $2 
+    docker run -it -v $1:$2 ghcr.io/myselfakashagarwal/coder nvim $2 
   elif [[ $mount_keys == "n" && $mount_gitconfig == "y" ]]
   then
-    docker run -it -v $1:$2 -v $HOME/.gitconfig:/root/.gitconfig ghcr.io/myselfakashagarwal/coder:1.0 nvim $2 
+    docker run -it -v $1:$2 -v $HOME/.gitconfig:/root/.gitconfig ghcr.io/myselfakashagarwal/coder nvim $2 
   elif [[ $mount_keys == "y" && $mount_gitconfig == "n" ]]
   then
-    docker run -it -v $1:$2  -v $HOME/.ssh:/root/.ssh ghcr.io/myselfakashagarwal/coder:1.0 nvim $2
+    docker run -it -v $1:$2  -v $HOME/.ssh:/root/.ssh ghcr.io/myselfakashagarwal/coder nvim $2
   elif [[ $mount_keys == "y" && $mount_gitconfig == "y" ]]
   then
-    docker run -it -v $1:$2 -v $HOME/.ssh:/root/.ssh -v $HOME/.gitconfig:/root/.gitconfig ghcr.io/myselfakashagarwal/coder:1.0 nvim $2
+    docker run -it -v $1:$2 -v $HOME/.ssh:/root/.ssh -v $HOME/.gitconfig:/root/.gitconfig ghcr.io/myselfakashagarwal/coder nvim $2
   else
     echo "
   echo "Configure !"   
