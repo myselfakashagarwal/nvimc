@@ -1,20 +1,42 @@
 #!/bin/bash
-
-# Variables
-
-# file to store configurations primarily is a key value pair of booleans 
+ 
 if [[ ! -e $HOME/.config/nvimc/.config ]]
 then 
   mkdir $HOME/.config/nvimc/ 2> /dev/null
   touch $HOME/.config/nvimc/.configure 2> /dev/null
-  echo "input_mount_key:y" > $HOME/.config/nvimc/.configure 2> /dev/null
-  echo "input_mount_config:y" >> $HOME/.config/nvimc/.configure 2> /dev/null
 fi
 
-# flag validation 
+mount_keys=$(cat $HOME/.config/nvimc/.configure | awk -F : 'NR==1 {print $2}')
+mount_gitconfig=$(cat $HOME/.config/nvimc/.configure | awk -F : 'NR==2 {print $2}')
+mounted_working_directory=""
+mounted_working_directory_location=""
+
+start() {
+  if [[ $mount_keys == "n" && $mount_gitconfig == "n" ]]
+  then
+    docker run -it -v $1:$2 ghcr.io/myselfakashagarwal/coder:1.0 nvim $2 
+  elif [[ $mount_keys == "n" && $mount_gitconfig == "y" ]]
+  then
+    docker run -it -v $1:$2 -v $HOME/.gitconfig:/root/.gitconfig ghcr.io/myselfakashagarwal/coder:1.0 nvim $2 
+  elif [[ $mount_keys == "y" && $mount_gitconfig == "n" ]]
+  then
+    docker run -it -v $1:$2  -v $HOME/.ssh:/root/.ssh ghcr.io/myselfakashagarwal/coder:1.0 nvim $2
+  elif [[ $mount_keys == "y" && $mount_gitconfig == "y" ]]
+  then
+    docker run -it -v $1:$2 -v $HOME/.ssh:/root/.ssh -v $HOME/.gitconfig:/root/.gitconfig ghcr.io/myselfakashagarwal/coder:1.0 nvim $2
+  else
+    echo "
+  echo "Configure !"   
+        "
+    nvimc -c
+  fi
+}
+ 
 if [[ $# -eq 0 ]]
 then
-  docker run -it -v $(pwd):/mnt/$(basename $(pwd)) ghcr.io/myselfakashagarwal/coder:1.0 nvim /mnt/$(basename $(pwd))
+  mounted_working_directory=$(pwd)
+  mounted_working_directory_location="/mnt/$(basename $mounted_working_directory)"
+  start $mounted_working_directory $mounted_working_directory_location 
 elif [[ $# == 1 ]]
 then
   case $1 in 
@@ -53,11 +75,11 @@ then
 else
   case $1 in 
   --file | -f)
-    input_file=$2
-    # echo $input_file
-    if [[ -e $input_file || -d $input_file ]]
+    mounted_working_directory=$2
+    mounted_working_directory_location=/mnt/$(basename $mounted_working_directory)
+    if [[ -e $mounted_working_directory || -d $mounted_working_directory ]]
     then
-      docker run -it -v $input_file:/mnt/$(basename $input_file) ghcr.io/myselfakashagarwal/coder:1.0 nvim /mnt/$(basename $input_file)
+      start $mounted_working_directory $mounted_working_directory_location 
     else 
       echo "Error: Invalid file"
     fi
@@ -66,6 +88,5 @@ else
     echo "Error: Invalid arguments"
   ;;
   esac
-fi
-
+fi 
 
