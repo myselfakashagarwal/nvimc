@@ -1,9 +1,12 @@
 #!/bin/bash
  
 if [[ ! -e $HOME/.config/nvimc/.config ]]
-then 
+then
+  mkdir $HOME/.config 
   mkdir $HOME/.config/nvimc/ 2> /dev/null
   touch $HOME/.config/nvimc/.configure 2> /dev/null
+  echo "input_mount_key:n" > $HOME/.config/nvimc/.configure 2> /dev/null
+  echo "input_mount_config:n" >> $HOME/.config/nvimc/.configure 2> /dev/null
 fi
 
 mount_keys=$(cat $HOME/.config/nvimc/.configure | awk -F : 'NR==1 {print $2}')
@@ -14,21 +17,18 @@ mounted_working_directory_location=""
 start() {
   if [[ $mount_keys == "n" && $mount_gitconfig == "n" ]]
   then
-    docker run -it -v $1:$2 ghcr.io/myselfakashagarwal/coder nvim $2 
+    docker run -it -v $1:$2 ghcr.io/myselfakashagarwal/coder nvim  
   elif [[ $mount_keys == "n" && $mount_gitconfig == "y" ]]
   then
-    docker run -it -v $1:$2 -v $HOME/.gitconfig:/root/.gitconfig ghcr.io/myselfakashagarwal/coder nvim $2 
+    docker run -it -v $1:$2 -v $HOME/.gitconfig:/root/.gitconfig ghcr.io/myselfakashagarwal/coder nvim 
   elif [[ $mount_keys == "y" && $mount_gitconfig == "n" ]]
   then
-    docker run -it -v $1:$2  -v $HOME/.ssh:/root/.ssh ghcr.io/myselfakashagarwal/coder nvim $2
+    docker run -it -v $1:$2  -v $HOME/.ssh:/root/.ssh ghcr.io/myselfakashagarwal/coder nvim 
   elif [[ $mount_keys == "y" && $mount_gitconfig == "y" ]]
   then
-    docker run -it -v $1:$2 -v $HOME/.ssh:/root/.ssh -v $HOME/.gitconfig:/root/.gitconfig ghcr.io/myselfakashagarwal/coder nvim $2
+    docker run -it -v $1:$2 -v $HOME/.ssh:/root/.ssh -v $HOME/.gitconfig:/root/.gitconfig ghcr.io/myselfakashagarwal/coder nvim
   else
-    echo "
-  echo "Configure !"   
-        "
-    nvimc -c
+     docker run -it -v $1:$2 ghcr.io/myselfakashagarwal/coder nvim 
   fi
 }
  
@@ -53,19 +53,41 @@ then
          "
   ;;
   --version | -v)
-    echo "1.0 beta"
+    echo "1.0 stable"
   ;;
   --configure | -c) 
     echo "
   Note: The configurations are primarily booleans thy which followed every time a coder container is spawned
         The configs are stored at $HOME/.config/nvimc/.configure
-        Dont worry about it they are handled automaticially !
-        They are 'y' by default 
         "
     read -p "Mount ssh keys [y/n]:" input_mount_key
     read -p "Mount Git Config [y/n]" input_mount_config
-    echo "input_mount_key:$input_mount_key" > $HOME/.config/nvimc/.configure
-    echo "input_mount_config:$input_mount_config" >> $HOME/.config/nvimc/.configure
+
+
+    if [[ ${input_mount_key} == 'y' ]]
+    then
+      if [[ -e $HOME/.ssh ]]; then
+        echo "input_mount_key:y" > $HOME/.config/nvimc/.configure
+      else
+        echo "Warning: keys not found, will not be mounted"
+        echo "input_mount_key:n" > $HOME/.config/nvimc/.configure
+      fi
+    else
+       echo "input_mount_key:n" > $HOME/.config/nvimc/.configure
+    fi
+
+
+    if [[ ${input_mount_config} == 'y' ]]
+    then
+      if [[ -e $HOME/.gitconfig ]]; then
+        echo "input_mount_config:$input_mount_config" >> $HOME/.config/nvimc/.configure
+      else
+        echo "Warning: Git Config not found, will not be mounted"
+        echo "input_mount_config:$input_mount_config" >> $HOME/.config/nvimc/.configure
+      fi
+    else
+       echo "input_mount_config:$input_mount_config" >> $HOME/.config/nvimc/.configure
+    fi
   ;;
   *)
     echo "Error: Invalid arguments"
@@ -88,4 +110,3 @@ else
   ;;
   esac
 fi 
-
